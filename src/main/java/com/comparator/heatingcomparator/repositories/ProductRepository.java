@@ -8,4 +8,5 @@ import com.comparator.heatingcomparator.models.Product;
 public interface ProductRepository extends CrudRepository<Product, Long>{
 
     Optional<Product> findByReference(String reference);
+
 }
