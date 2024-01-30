@@ -1,5 +1,6 @@
 package com.comparator.heatingcomparator.models;
 
+import jakarta.annotation.Nonnull;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -8,13 +9,19 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import lombok.Data;
 import jakarta.persistence.ForeignKey;
+
+
 @Data
 @Entity
 public class Product {
     
     @Id @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
+
+    @Nonnull
     private String designation;
+
+    @Nonnull
     private String reference;
 
     @ManyToOne
@@ -22,6 +29,7 @@ public class Product {
 			foreignKey = @ForeignKey(name = "SUPPLIER_ID_FK"))
     private Supplier supplier;
     
+    @Nonnull
     private String type;
 
     public Product(){};

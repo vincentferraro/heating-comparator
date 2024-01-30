@@ -4,13 +4,14 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.comparator.heatingcomparator.repositories.ProductRepository;
 
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 import java.util.Optional;
 
-
-
+import org.apache.catalina.connector.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 
@@ -24,7 +25,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 
-
+@Slf4j
 @RestController
 @RequestMapping(path="/products")
 public class ProductController {
@@ -33,42 +34,65 @@ public class ProductController {
     ProductRepository productRepo ;
 
     @GetMapping
-    public Iterable<Product> getAllProducts() {
-        return productRepo.findAll();
+    public ResponseEntity<Iterable<Product>> getAllProducts() {
+        try{
+
+            Iterable<Product> product = productRepo.findAll();
+            return ResponseEntity.status(HttpStatus.OK).body(product);
+
+        }catch(Exception exc){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     @GetMapping("/{reference}")
-    public Optional<Product> getProductByReference(@PathVariable("reference") String reference) {
-        return productRepo.findByReference(reference);
+    public ResponseEntity<Optional<Product>> getProductByReference(@PathVariable("reference") String reference) {
+        try{
+            Optional<Product> product = productRepo.findByReference(reference);
+            if(!product.isPresent()){
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+            }
+            return ResponseEntity.status(HttpStatus.OK).body(product);
+        }catch(Exception exc){
+            log.info(exc.getStackTrace().toString());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+        
     }
     
     @PostMapping
     public ResponseEntity<String> addProduct(@RequestBody Product product) {
-        
         try{
-            if(product != null){
-                productRepo.save(product);
+            if(product == null){
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("missing input(s)");
             }
+            productRepo.save(product);
             return ResponseEntity.status(HttpStatus.CREATED).body("Product created successfully");
         }catch(IllegalArgumentException exc){   
-            
-            return ResponseEntity.badRequest().body("field missing");
+            log.info(exc.getStackTrace().toString());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
 
         }
     }
 
     @DeleteMapping(path="/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteProduct(@PathVariable("id") Long id){
+    public ResponseEntity<String> deleteProduct(@PathVariable("id") Long id){
         try{
-            if(id != null){
-                Optional<Product> product = productRepo.findById(id);
-                if(product.isPresent()){
-                    productRepo.deleteById(id);
-                }
+            if(id == null){
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("missing id");
             }
             
-        }catch(Exception e){}
+            Optional<Product> product = productRepo.findById(id);
+            if(!product.isPresent()){
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("id not found");
+            }
+            productRepo.deleteById(id);
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+        }catch(Exception exc){
+            log.info(exc.getStackTrace().toString());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     

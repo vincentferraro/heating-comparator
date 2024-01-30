@@ -8,4 +8,5 @@ import java.util.Optional;
 
 public interface SupplierRepository extends CrudRepository<Supplier, Long>{
     public Optional<Supplier> findByName(String name);
+
 }

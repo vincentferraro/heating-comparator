@@ -11,7 +11,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
@@ -29,21 +32,21 @@ public class SupplierController {
     SupplierRepository supplierRepo;
 
     @GetMapping
-    public Iterable<Supplier> getAllSuppliers() {
-        try{
-           Iterable<Supplier> supplier =supplierRepo.findAll();
-            log.info(supplier.toString());
-            return supplier;
-        }catch(Exception e){
-            log.info(e.getStackTrace().toString());
-            return null;
+    public ResponseEntity<Iterable<Supplier>> getAllSuppliers() {
+        Iterable<Supplier> supplier =supplierRepo.findAll();
+        if(supplier != null){
+            ResponseEntity.status(HttpStatus.OK).body(supplier);
         }
-        
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
     }
 
-    @GetMapping("/{id}")
-    public Optional<Supplier> getSupplierByName(@PathVariable("id") String name) {
-        return supplierRepo.findByName(name);
+    @GetMapping("/{name}")
+    public ResponseEntity<Optional<Supplier>> getSupplierByName(@PathVariable("name") String name) {
+        Optional<Supplier> supplier = supplierRepo.findByName(name);
+        if(supplier != null){
+            return ResponseEntity.status(HttpStatus.OK).body(supplier);
+        }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
     }
 
     @PostMapping
@@ -52,13 +55,27 @@ public class SupplierController {
         try{
             if(supplier != null){
                 supplierRepo.save(supplier);
+                return ResponseEntity.status(HttpStatus.CREATED).body("supplier added successfully");
             }
-            return ResponseEntity.ok().body("supplier added successfully");
-        }catch(IllegalArgumentException exc){
-            return ResponseEntity.badRequest().body("missing input(s)");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("missing input(s)");
+        }catch(Exception exc){
+            log.info(exc.getStackTrace().toString());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
-        
-        
+    
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> deleteSupplierById(@PathVariable("id") Long id){
+        try{
+            if(id != null){
+                supplierRepo.deleteById(id);
+                return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+            }
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }catch(Exception exc){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
     }
     
     
