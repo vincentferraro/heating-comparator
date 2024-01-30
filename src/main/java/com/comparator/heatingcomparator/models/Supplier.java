@@ -6,6 +6,7 @@ import java.util.List;
 
 import jakarta.annotation.Generated;
 import jakarta.annotation.Nonnull;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -19,12 +20,12 @@ public class Supplier {
     
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long id;
+    private Integer id;
 
-    @Nonnull
+    @Column(nullable = false)
     private String name;
 
-    @Nonnull
+    @Column(nullable = false)
     private String location;
 
     public Supplier(){

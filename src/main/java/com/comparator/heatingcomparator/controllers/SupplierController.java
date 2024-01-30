@@ -51,15 +51,14 @@ public class SupplierController {
 
     @PostMapping
     public ResponseEntity<String> addSupplier(@RequestBody Supplier supplier) {
-        
         try{
-            if(supplier != null){
-                supplierRepo.save(supplier);
-                return ResponseEntity.status(HttpStatus.CREATED).body("supplier added successfully");
+            if(supplier.getName() == null || supplier.getLocation() == null){
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("missing input(s)");
             }
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("missing input(s)");
+            supplierRepo.save(supplier);
+            return ResponseEntity.status(HttpStatus.CREATED).body("supplier added successfully");
         }catch(Exception exc){
-            log.info(exc.getStackTrace().toString());
+            log.info("Error"+exc.getStackTrace().toString());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     

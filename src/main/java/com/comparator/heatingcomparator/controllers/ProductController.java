@@ -7,6 +7,7 @@ import com.comparator.heatingcomparator.repositories.ProductRepository;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 import java.util.Optional;
@@ -41,12 +42,14 @@ public class ProductController {
             return ResponseEntity.status(HttpStatus.OK).body(product);
 
         }catch(Exception exc){
+            log.info(exc.getStackTrace().toString());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
-    @GetMapping("/{reference}")
-    public ResponseEntity<Optional<Product>> getProductByReference(@PathVariable("reference") String reference) {
+    @GetMapping(params ="reference")
+    public ResponseEntity<Optional<Product>> getProductByReference(@RequestParam("reference") String reference) {
+        log.info(reference);
         try{
             Optional<Product> product = productRepo.findByReference(reference);
             if(!product.isPresent()){
@@ -59,17 +62,33 @@ public class ProductController {
         }
         
     }
+
+    @GetMapping(path="/search", params="name")
+    public ResponseEntity<Optional<Product>> getProductBySearch(@RequestParam("name") String name) {
+        try{
+            Optional<Product> products = productRepo.searchByName(name);
+            return ResponseEntity.status(HttpStatus.OK).body(products);
+
+        }catch(Exception exc){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+    
     
     @PostMapping
     public ResponseEntity<String> addProduct(@RequestBody Product product) {
+        log.info("HERE");
         try{
-            if(product == null){
+            log.info("HERE2");
+            log.info(product.getDesignation()+" "+product.getReference()+" "+product.getSupplier()+" "+product.getType());
+            log.info("HERE 3");
+            if(product.getDesignation() == null || product.getReference() == null|| product.getSupplier() == null || product.getType() == null){
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("missing input(s)");
             }
             productRepo.save(product);
             return ResponseEntity.status(HttpStatus.CREATED).body("Product created successfully");
         }catch(IllegalArgumentException exc){   
-            log.info(exc.getStackTrace().toString());
+            log.info("ERROR"+exc.getStackTrace().toString());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
 
         }
@@ -77,7 +96,7 @@ public class ProductController {
 
     @DeleteMapping(path="/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public ResponseEntity<String> deleteProduct(@PathVariable("id") Long id){
+    public ResponseEntity<String> deleteProduct(@PathVariable("id") Integer id){
         try{
             if(id == null){
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("missing id");
