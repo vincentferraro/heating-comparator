@@ -3,6 +3,7 @@ package com.comparator.heatingcomparator.controllers;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.comparator.heatingcomparator.repositories.ProductRepository;
+import com.comparator.heatingcomparator.services.ProductManagementImpl;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -11,20 +12,22 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 import java.util.Optional;
+import java.util.List;
 
-import org.apache.catalina.connector.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
 import com.comparator.heatingcomparator.models.Product;
+import com.comparator.heatingcomparator.models.Supplier;
+
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-
 
 @Slf4j
 @RestController
@@ -34,6 +37,9 @@ public class ProductController {
     @Autowired
     ProductRepository productRepo ;
 
+    @Autowired
+    ProductManagementImpl productManagement;
+    
     @GetMapping
     public ResponseEntity<Iterable<Product>> getAllProducts() {
         try{
@@ -63,10 +69,10 @@ public class ProductController {
         
     }
 
-    @GetMapping(path="/search", params="name")
-    public ResponseEntity<Optional<Product>> getProductBySearch(@RequestParam("name") String name) {
+    @GetMapping(path="/search", params="designation")
+    public ResponseEntity<List<Product>> getProductBySearch(@RequestParam("designation") String designation) {
         try{
-            Optional<Product> products = productRepo.searchByName(name);
+            List<Product> products = productRepo.findByDesignationStartsWith(designation);
             return ResponseEntity.status(HttpStatus.OK).body(products);
 
         }catch(Exception exc){
@@ -114,6 +120,18 @@ public class ProductController {
         }
     }
 
+
+    @PatchMapping(path = "/{productId}")
+    public ResponseEntity<String> changeProductFromSupplier(@PathVariable("productId") Integer productId, @RequestBody Supplier supplier){
+        log.info("PdocutID"+productId+ ", Supplier ID"+ supplier.getId());
+        try{
+            log.info("IN TRY");
+            productManagement.changeProductFromSupplier(productId, supplier.getId());
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+        }catch(Exception exc){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
     
 
 }
