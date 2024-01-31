@@ -12,7 +12,7 @@ public interface ProductRepository extends CrudRepository<Product, Integer>{
 
     Optional<Product> findByReference(String reference);
 
-    @Query("SELECT p from product p WHERE p.name LIKE :name")
-    Optional<Product> searchByName(@Param("name") String name);
+    @Query("SELECT p from product p WHERE p.name LIKE ?name")
+    Optional<Product> searchByName(String name);
 
 }

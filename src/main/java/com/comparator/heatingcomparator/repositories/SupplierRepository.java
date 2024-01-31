@@ -6,7 +6,7 @@ import com.comparator.heatingcomparator.models.Supplier;
 import java.util.Optional;
 
 
-public interface SupplierRepository extends CrudRepository<Supplier, Long>{
+public interface SupplierRepository extends CrudRepository<Supplier, Integer>{
     public Optional<Supplier> findByName(String name);
 
 }

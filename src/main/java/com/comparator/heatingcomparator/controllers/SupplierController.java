@@ -65,7 +65,7 @@ public class SupplierController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteSupplierById(@PathVariable("id") Long id){
+    public ResponseEntity<String> deleteSupplierById(@PathVariable("id") Integer id){
         try{
             if(id != null){
                 supplierRepo.deleteById(id);
